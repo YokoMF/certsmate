@@ -1,12 +1,7 @@
-from sqlalchemy import String, Date, DateTime, ForeignKey
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
-import uuid
-from datetime import datetime
+from app import db
 
-class Base(DeclarativeBase):
-    pass
 
-class Certificate(Base):
+class Certificate(db.Base):
     __tablename__ = "certificates"
 
     # 主键，UUID 类型

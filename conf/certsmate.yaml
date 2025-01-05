@@ -1,0 +1,9 @@
+sqlalchemy:
+  db: mysql
+  engine: mysqlconnector
+  user: msbus
+  host: mysql.tacent.com
+  port: 3306
+  schema: certsmate
+  echo: false
+
