@@ -1,0 +1,40 @@
+image: artifactory.homelab.com/docker.io/docker:27.3.1-cli
+
+variables:
+  DOCKER_IMAGE_NAME: opsdev/hello-world:latest
+
+stages:
+  - build
+
+build:
+  stage: build
+  tags:
+    - develop
+  before_script:
+    - echo "Update certificate"   # 添加镜像仓库的信任证书
+    - cp $JCR_CERTIFICATE  /usr/local/share/ca-certificates/ca.crt
+    - update-ca-certificates
+    # - docker login -u "$JCR_REGISTRY_USER" -p "$JCR_REGISTRY_PASSWORD"
+  script:
+    - docker build --force-rm -t $DOCKER_IMAGE_NAME .
+    - docker image prune -f --filter "dangling=true"   # 清理<None>:<None>镜像
+
+release:
+  stage: build
+  tags:
+    - develop
+  image:
+    name: artifactory.homelab.com/docker.io/gitlab/glab:v1.50.0
+    entrypoint: [""]
+  variables:
+    GIT_SSL_NO_VERIFY: "true"
+    GITLAB_HOST: $CI_SERVER_URL
+    DEBUG: "true"
+  script:
+    - glab config set --global check-update false
+    - glab config set --global skip_tls_verify true --host $CI_SERVER_HOST
+    - glab auth login --hostname $CI_SERVER_HOST --api-protocol $CI_SERVER_PROTOCOL --job-token $CI_JOB_TOKEN
+    - ls -al ~/.config/glab-cli
+    - cat ~/.config/glab-cli/config.yml
+    - cat .git/config
+    - glab release create v1.0
